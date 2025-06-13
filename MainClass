@@ -1,0 +1,196 @@
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+
+// Main Frame Class
+public class MainFrame extends JFrame {
+    private JTable productTable;
+    private JButton proceedButton;
+
+    public MainFrame() {
+        setTitle("Vape Shop");
+        setSize(600, 400);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
+
+        // Sample product data for vape juices
+        String[] columnNames = {"ID", "Name", "Price"};
+        Object[][] data = {
+            {1, "Cool Mint - $10.0"},
+            {2, "Strawberry Burst - $15.0"},
+            {3, "Mango Tango - $20.0"},
+            {4, "Vanilla Cream - $25.0"}
+        };
+
+        productTable = new JTable(new DefaultTableModel(data, columnNames));
+        productTable.setBackground(Color.WHITE);
+        productTable.setForeground(Color.BLACK);
+        productTable.setFont(new Font("Arial", Font.PLAIN, 14));
+        add(new JScrollPane(productTable), BorderLayout.CENTER);
+
+        proceedButton = new JButton("Proceed to Transaction");
+        proceedButton.setBackground(new Color(70, 130, 180)); // Steel Blue
+        proceedButton.setForeground(Color.WHITE);
+        proceedButton.setFont(new Font("Arial", Font.BOLD, 14));
+        proceedButton.addActionListener((ActionEvent e) -> openTransactionFrame());
+
+        add(proceedButton, BorderLayout.SOUTH);
+    }
+
+    private void openTransactionFrame() {
+        TransactionFrame transactionFrame = new TransactionFrame(this);
+        transactionFrame.setVisible(true);
+        this.setVisible(false); // Hide main frame
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            MainFrame mainFrame = new MainFrame();
+            mainFrame.setVisible(true);
+        });
+    }
+}
+
+// Transaction Frame Class
+class TransactionFrame extends JFrame {
+    private JRadioButton[] productRadioButtons;
+    private JTextField quantityField;
+    private JRadioButton cashRadioButton;
+    private JRadioButton cardRadioButton;
+    private JTable cartTable;
+    private DefaultTableModel cartModel;
+
+    public TransactionFrame(MainFrame mainFrame) {
+        setTitle("Transaction");
+        setSize(600, 400);
+        setLayout(new BorderLayout());
+
+        // Product selection for vape juices
+        String[] products = {
+            "Cool Mint - $10.0",
+            "Strawberry Burst - $15.0",
+            "Mango Tango - $20.0",
+            "Vanilla Cream - $25.0"
+        };
+
+        productRadioButtons = new JRadioButton[products.length];
+        ButtonGroup productGroup = new ButtonGroup();
+
+        JPanel productPanel = new JPanel();
+        productPanel.setBackground(Color.WHITE);
+
+        for (int i = 0; i < products.length; i++) {
+            productRadioButtons[i] = new JRadioButton(products[i]);
+            productRadioButtons[i].setBackground(Color.WHITE);
+            productRadioButtons[i].setForeground(Color.BLACK);
+            productRadioButtons[i].setFont(new Font("Arial", Font.PLAIN, 14));
+            productGroup.add(productRadioButtons[i]);
+            productPanel.add(productRadioButtons[i]);
+        }
+
+        quantityField = new JTextField(5);
+        quantityField.setBackground(Color.WHITE);
+        quantityField.setForeground(Color.BLACK);
+        quantityField.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        // Payment method selection
+        cashRadioButton = new JRadioButton("Cash");
+        cardRadioButton = new JRadioButton("Card");
+
+        ButtonGroup paymentGroup = new ButtonGroup();
+        paymentGroup.add(cashRadioButton);
+        paymentGroup.add(cardRadioButton);
+
+        cashRadioButton.setBackground(Color.WHITE);
+        cashRadioButton.setForeground(Color.BLACK);
+        cashRadioButton.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        cardRadioButton.setBackground(Color.WHITE);
+        cardRadioButton.setForeground(Color.BLACK);
+        cardRadioButton.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        // Cart table
+        cartModel = new DefaultTableModel(new String[]{"Product", "Quantity", "Total"}, 0);
+        cartTable = new JTable(cartModel);
+        cartTable.setBackground(Color.WHITE);
+        cartTable.setForeground(Color.BLACK);
+        cartTable.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        // Buttons
+        JButton addToCartButton = new JButton("Add to Cart");
+        addToCartButton.setBackground(new Color(70, 130, 180)); // Steel Blue
+        addToCartButton.setForeground(Color.WHITE);
+        addToCartButton.setFont(new Font("Arial", Font.BOLD, 14));
+        addToCartButton.addActionListener((ActionEvent e) -> addToCart());
+
+        JButton calculateTotalButton = new JButton("Calculate Total");
+        calculateTotalButton.setBackground(new Color(70, 130, 180)); // Steel Blue
+        calculateTotalButton.setForeground(Color.WHITE);
+        calculateTotalButton.setFont(new Font("Arial", Font.BOLD, 14));
+        calculateTotalButton.addActionListener((ActionEvent e) -> calculateTotal());
+
+        JButton returnButton = new JButton("Return to Store");
+        returnButton.setBackground(new Color(70, 130, 180)); // Steel Blue
+        returnButton.setForeground(Color.WHITE);
+        returnButton.setFont(new Font("Arial", Font.BOLD, 14));
+        returnButton.addActionListener((ActionEvent e) -> {
+            mainFrame.setVisible(true);
+            dispose(); // Close transaction frame
+        });
+
+        // Layout setup
+        JPanel inputPanel = new JPanel();
+        inputPanel.setBackground(Color.WHITE);
+        inputPanel.add(new JLabel("Select Vape Juice:"));
+        inputPanel.add(productPanel);
+        inputPanel.add(new JLabel("Quantity:"));
+        inputPanel.add(quantityField);
+        inputPanel.add(addToCartButton);
+
+        JPanel paymentPanel = new JPanel();
+        paymentPanel.setBackground(Color.WHITE);
+        paymentPanel.add(cashRadioButton);
+        paymentPanel.add(cardRadioButton);
+        paymentPanel.add(calculateTotalButton);
+
+        add(inputPanel, BorderLayout.NORTH);
+        add(new JScrollPane(cartTable), BorderLayout.CENTER);
+        add(paymentPanel, BorderLayout.SOUTH);
+        add(returnButton, BorderLayout.EAST);
+    }
+
+    private void addToCart() {
+        String selectedProduct = null;
+        for (JRadioButton radioButton : productRadioButtons) {
+            if (radioButton.isSelected()) {
+                selectedProduct = radioButton.getText();
+                break;
+            }
+        }
+
+        if (selectedProduct != null) {
+            try {
+                String quantityText = quantityField.getText().trim();
+                int quantity = Integer.parseInt(quantityText);
+
+                double price = Double.parseDouble(selectedProduct.split("- \\$")[1]);
+                double total = price * quantity;
+
+                cartModel.addRow(new Object[]{selectedProduct, quantity, total});
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Please enter a valid quantity.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a product.");
+        }
+    }
+
+    private void calculateTotal() {
+        double totalAmount = 0;
+        for (int i = 0; i < cartModel.getRowCount(); i++) {
+            totalAmount += (double) cartModel.getValueAt(i, 2);
+        }
+        JOptionPane.showMessageDialog(this, "Total Amount: $" + totalAmount);
+    }
+}
